@@ -85,7 +85,7 @@ def process_bed_fasta_bam(bed_file, fasta_file, bam_file, output_prefix):
         transition_matrix, new_current = count_transitions(bam_file, chrom, start, end, transition_counts, current)
         current = new_current
 
-        # Combine the one-hot encoding and the transition counts
+        # Combine the one-hot encoding and the transition counts, and the FINAL Shape of the resulted matrix should be 16xL where L is the length of the current window.
         combined_tensor = np.vstack([transition_counts, one_hot_encoded_sequence.T])
 
         # Save the tensor as a numpy file
