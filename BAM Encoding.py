@@ -34,27 +34,27 @@ def count_transitions(bam_file, chrom, start, end, transition_counts, current_st
                     strand = 6 # Starting index for reverse transitions, first original, then reverse version
                 else:
                     strand = 0 # If the alignment is in forward, then the start index would be 0
-
+                
                 if pileupread.cigar:
                     for cigar in pileupread.cigar:
                         operation, length = cigar
                         if current_state == 0 and pileupread.is_head: # A
-                            transition_counts[pileupcolumn.pos][strand + 0] += 1
+                            transition_counts[strand + 0][pileupcolumn.pos - start] += 1
                             current_state = 1
                         elif current_state == 1 and operation != 3: # B
-                            transition_counts[pileupcolumn.pos][strand + 1] += 1
+                            transition_counts[strand + 1][pileupcolumn.pos - start] += 1
                             current_state = 1
                         elif current_state == 1 and operation == 3: # C
-                            transition_counts[pileupcolumn.pos][strand + 2] += 1
+                            transition_counts[strand + 2][pileupcolumn.pos - start] += 1
                             current_state = 2
                         elif current_state == 2 and operation != 3: # D
-                            transition_counts[pileupcolumn.pos][strand + 3] += 1
+                            transition_counts[strand + 3][pileupcolumn.pos - start] += 1
                             current_state = 1
                         elif current_state == 2 and operation == 3: # E
-                            transition_counts[pileupcolumn.pos][strand + 4] += 1
+                            transition_counts[strand + 4][pileupcolumn.pos - start] += 1
                             current_state = 2
                         elif current_state == 1 and pileupread.is_tail: # F
-                            transition_counts[pileupcolumn.pos][strand + 5] += 1
+                            transition_counts[strand + 5][pileupcolumn.pos - start] += 1
                             current_state = 3
 
     return transition_counts, current_state
@@ -85,7 +85,7 @@ def process_bed_fasta_bam(bed_file, fasta_file, bam_file, output_prefix):
         transition_matrix, new_current = count_transitions(bam_file, chrom, start, end, transition_counts, current)
         current = new_current
 
-        # Combine the one-hot encoding and the transition counts, and the FINAL Shape of the resulted matrix should be 16xL where L is the length of the current window.
+        # Combine the one-hot encoding and the transition counts
         combined_tensor = np.vstack([transition_counts, one_hot_encoded_sequence.T])
 
         # Save the tensor as a numpy file
