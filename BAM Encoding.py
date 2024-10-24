@@ -37,15 +37,17 @@ def count_transitions(bam_file, chrom, start, end, transition_counts, current_st
 
                 if pileupread.alignment.cigartuples:
                     inside_a_pileupcolumn = 0
+                    
+                    if current_state == 0: # State 0
+                        if pileupread.alignment.is_head: # A
+                            current_state = 1
+                            transition_counts[strand + 0][pileupread.alignment.pos - start + inside_a_pileupcolumn] += 1
+                            inside_a_pileupcolumn += 1
+                            
                     for cigar in pileupread.alignment.cigartuples:
                         operation, length = cigar
-                        if current_state == 0: # State 0
-                            if pileupread.alignment.is_head: # A
-                                 current_state = 1
-                                 transition_counts[strand + 0][pileupread.alignment.pos - start + inside_a_pileupcolumn] += 1
-                                 inside_a_pileupcolumn += 1
-                                
-                        elif current_state == 1: # State 1
+
+                        if current_state == 1: # State 1
                             if pileupread.is_tail: # F
                                  current_state = 3
                                  transition_counts[strand + 0][pileupread.alignment.pos - start + inside_a_pileupcolumn] += 1
@@ -59,7 +61,7 @@ def count_transitions(bam_file, chrom, start, end, transition_counts, current_st
                                  for inside_position in range(length):
                                      transition_counts[strand + 2][pileupcolumn.pos - start + inside_position + inside_a_pileupcolumn] += 1
                                  inside_a_pileupcolumn += length
-                                
+
                         elif current_state == 2: # State 2
                             if operation == 2 or operation == 3: # D
                                 current_state = 1
