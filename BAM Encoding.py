@@ -37,41 +37,40 @@ def count_transitions(bam_file, chrom, start, end, transition_counts, current_st
 
                 if pileupread.alignment.cigartuples:
                     inside_a_pileupcolumn = 0
-                    
+
                     if current_state == 0: # State 0
                         if pileupread.alignment.is_head: # A
                             current_state = 1
                             transition_counts[strand + 0][pileupread.alignment.pos - start + inside_a_pileupcolumn] += 1
-                            inside_a_pileupcolumn += 1
-                            
+
                     for cigar in pileupread.alignment.cigartuples:
                         operation, length = cigar
 
                         if current_state == 1: # State 1
                             if pileupread.is_tail: # F
                                  current_state = 3
-                                 transition_counts[strand + 0][pileupread.alignment.pos - start + inside_a_pileupcolumn] += 1
-                            elif operation == 2 or operation == 3: # B
+                                 transition_counts[strand + 5][pileupread.alignment.pos - start + inside_a_pileupcolumn] += 1
+                            elif operation == 0 or operation == 7 or operation == 8: # B
                                  current_state = 1
                                  for inside_position in range(length): # Rotating inside a cigar segment such as inside the 10M
                                      transition_counts[strand + 1][pileupread.alignment.pos - start + inside_position + inside_a_pileupcolumn] += 1
                                  inside_a_pileupcolumn += length
-                            elif operation == 0 or operation == 7 or operation == 8: # C
+                            elif operation == 2 or operation == 3: # C
                                  current_state = 2
                                  for inside_position in range(length):
                                      transition_counts[strand + 2][pileupcolumn.pos - start + inside_position + inside_a_pileupcolumn] += 1
                                  inside_a_pileupcolumn += length
 
                         elif current_state == 2: # State 2
-                            if operation == 2 or operation == 3: # D
-                                current_state = 1
-                                for inside_position in range(length):
-                                    transition_counts[strand + 1][pileupcolumn.pos - start + inside_position + inside_a_pileupcolumn] += 1
-                                inside_a_pileupcolumn += length
-                            elif operation == 0 or operation == 7 or operation == 8: # E
+                            if operation == 2 or operation == 3: # E
                                 current_state = 2
                                 for inside_position in range(length):
-                                    transition_counts[strand + 2][pileupcolumn.pos - start + inside_position + inside_a_pileupcolumn] += 1
+                                    transition_counts[strand + 4][pileupcolumn.pos - start + inside_position + inside_a_pileupcolumn] += 1
+                                inside_a_pileupcolumn += length
+                            elif operation == 0 or operation == 7 or operation == 8: # D
+                                current_state = 1
+                                for inside_position in range(length):
+                                    transition_counts[strand + 3][pileupcolumn.pos - start + inside_position + inside_a_pileupcolumn] += 1
                                 inside_a_pileupcolumn += length
 
     return transition_counts, current_state
